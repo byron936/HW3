@@ -329,6 +329,17 @@ BUILD/B_L4S5I_IOT01A/GCC_ARM-TFLITE/main.o: main.cpp \
  mbed_rpc/mbed_rpc/RpcClasses.h 4dgl-ulcd-se/uLCD_4DGL.h \
  /home/ee2405/ee2405/mbed-os-build/platform/include/platform/Stream.h \
  /home/ee2405/ee2405/mbed-os-build/platform/include/platform/FileLike.h \
+ wifi_mqtt/MQTTNetwork.h \
+ /home/ee2405/ee2405/mbed-os-build/connectivity/netsocket/include/netsocket/NetworkInterface.h \
+ wifi_mqtt/MQTT/MQTTmbed.h wifi_mqtt/MQTT/MQTTClient.h \
+ wifi_mqtt/MQTT/FP/FP.h wifi_mqtt/MQTT/MQTTPacket/MQTTPacket.h \
+ wifi_mqtt/MQTT/MQTTPacket/MQTTConnect.h \
+ wifi_mqtt/MQTT/MQTTPacket/MQTTPublish.h \
+ wifi_mqtt/MQTT/MQTTPacket/MQTTSubscribe.h \
+ wifi_mqtt/MQTT/MQTTPacket/MQTTUnsubscribe.h \
+ wifi_mqtt/MQTT/MQTTPacket/MQTTFormat.h \
+ wifi_mqtt/MQTT/MQTTPacket/StackTrace.h \
+ wifi_mqtt/MQTT/MQTTPacket/MQTTPacket.h wifi_mqtt/MQTT/MQTTLogging.h \
  accelerometer_handler.h tensorflowlite_mbed/tensorflow/lite/c/common.h \
  tensorflowlite_mbed/tensorflow/lite/micro/micro_error_reporter.h \
  tensorflowlite_mbed/tensorflow/lite/core/api/error_reporter.h \
