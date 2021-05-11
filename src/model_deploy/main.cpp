@@ -12,16 +12,23 @@
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"
 
+using namespace std::chrono;
+
 // Create an area of memory to use for input, output, and intermediate arrays.
 // The size of this will depend on the model you're using, and may need to be
 // determined by experimentation.
 
-void getAcc(Arguments *in, Reply *out);
+Thread t1;
+
+void get_th_angle(Arguments *in, Reply *out);
+void thread_th_angle();
 
 BufferedSerial pc(USBTX, USBRX);
-RPCFunction rpcAcc(&getAcc, "getAcc");
+RPCFunction rpc_th_angle(&get_th_angle, "get_th_angle");
 
 uLCD_4DGL uLCD(D1, D0, D2);
+DigitalOut myled(LED1);
+DigitalIn mypin(USER_BUTTON);
 
 int th_angle = 0;
 
@@ -95,8 +102,14 @@ int main(int argc, char *argv[])
     }
 }
 
-void getAcc(Arguments *in, Reply *out)
+void get_th_angle(Arguments *in, Reply *out)
 {
+    t1.start(thread_th_angle);
+}
+
+void thread_th_angle()
+{
+    myled = 1;
     // Whether we should clear the buffer next time we fetch data
     bool should_clear_buffer = false;
     bool got_data = false;
@@ -162,7 +175,7 @@ void getAcc(Arguments *in, Reply *out)
         return -1;
     }
     error_reporter->Report("Set up successful...\n");
-    while (true)
+    while (mypin == 1)
     {
         // Attempt to read new data from the accelerometer
         got_data = ReadAccelerometer(error_reporter, model_input->data.f,
@@ -195,4 +208,5 @@ void getAcc(Arguments *in, Reply *out)
             uLCD.printf("\n%d\n", th_angle);
         }
     }
+    myled = 0;
 }
