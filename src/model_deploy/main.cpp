@@ -1,3 +1,4 @@
+#include <math.h>
 #include "mbed.h"
 
 #include "mbed_rpc.h"
@@ -7,6 +8,8 @@
 #include "MQTTNetwork.h"
 #include "MQTTmbed.h"
 #include "MQTTClient.h"
+
+#include "stm32l475e_iot01_accelero.h"
 
 #include "accelerometer_handler.h"
 #include "config.h"
@@ -38,6 +41,7 @@ EventQueue mqtt_queue;
 
 Thread t1;
 Thread t2;
+Ticker flipper;
 
 void get_th_angle(Arguments *in, Reply *out);
 void thread_th_angle();
@@ -53,6 +57,8 @@ DigitalOut myled(LED1);
 DigitalIn mypin(USER_BUTTON);
 
 int th_angle = 0;
+double theta = -1;
+int flag = 0;
 
 void messageArrived(MQTT::MessageData &md)
 {
@@ -69,19 +75,37 @@ void messageArrived(MQTT::MessageData &md)
 
 void publish_message(MQTT::Client<MQTTNetwork, Countdown> *client)
 {
-    message_num++;
-    MQTT::Message message;
-    char buff[100];
-    sprintf(buff, "threshold angle: %d", th_angle);
-    message.qos = MQTT::QOS0;
-    message.retained = false;
-    message.dup = false;
-    message.payload = (void *)buff;
-    message.payloadlen = strlen(buff) + 1;
-    int rc = client->publish(topic, message);
+    if (mypin == 0)
+    {
+        MQTT::Message message;
+        char buff[100];
+        sprintf(buff, "threshold angle: %d", th_angle);
+        message.qos = MQTT::QOS0;
+        message.retained = false;
+        message.dup = false;
+        message.payload = (void *)buff;
+        message.payloadlen = strlen(buff) + 1;
+        int rc = client->publish(topic, message);
 
-    printf("rc:  %d\r\n", rc);
-    printf("Puslish message: %s\r\n", buff);
+        printf("rc:  %d\r\n", rc);
+        printf("Puslish message: %s\r\n", buff);
+    }
+    else if (theta > th_angle && flag < 5)
+    {
+        flag++;
+        MQTT::Message message;
+        char buff[100];
+        sprintf(buff, "angle: %d", theta);
+        message.qos = MQTT::QOS0;
+        message.retained = false;
+        message.dup = false;
+        message.payload = (void *)buff;
+        message.payloadlen = strlen(buff) + 1;
+        int rc = client->publish(topic, message);
+
+        printf("rc:  %d\r\n", rc);
+        printf("Puslish message: %s\r\n", buff);
+    }
 }
 
 void close_mqtt()
@@ -187,8 +211,10 @@ int main(int argc, char *argv[])
     }
 
     mqtt_thread.start(callback(&mqtt_queue, &EventQueue::dispatch_forever));
-    btn2.rise(mqtt_queue.event(&publish_message, &client));
+    //btn2.rise(mqtt_queue.event(&publish_message, &client));
+    flipper.attach(mqtt_queue.event(&publish_message, &client), 200ms);
 
+    BSP_ACCELERO_Init();
     char buf[256], outbuf[256];
 
     FILE *devin = fdopen(&pc, "r");
@@ -352,9 +378,12 @@ void thread_th_angle()
 
 void thread_det_angle()
 {
-    printf("haha1\n");
-    printf("haha2\n");
-    printf("haha3\n");
-    printf("haha4\n");
-    printf("haha5\n");
+    int16_t pDataXYZ[3] = {0};
+    while (flag < 5)
+    {
+        BSP_ACCELERO_AccGetXYZ(pDataXYZ);
+        theta = -180 / acos(-1) * asin(pDataXYZ[0] / sqrt(pDataXYZ[0] * pDataXYZ[0] + pDataXYZ[2] * pDataXYZ[2]));
+        printf("angle: %lf\n", theta);
+        ThisThread::sleep_for(200ms);
+    }
 }
