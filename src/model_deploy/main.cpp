@@ -54,10 +54,12 @@ RPCFunction rpc_det_angle(&det_angle, "det_angle");
 
 uLCD_4DGL uLCD(D1, D0, D2);
 DigitalOut myled(LED1);
+DigitalOut myled2(LED2);
 DigitalIn mypin(USER_BUTTON);
 
 int th_angle = 0;
 double theta = -1;
+double theta_r = -1;
 int flag = 0;
 
 void messageArrived(MQTT::MessageData &md)
@@ -95,7 +97,7 @@ void publish_message(MQTT::Client<MQTTNetwork, Countdown> *client)
         flag++;
         MQTT::Message message;
         char buff[100];
-        sprintf(buff, "angle: %d", theta);
+        sprintf(buff, "angle: %lf", theta);
         message.qos = MQTT::QOS0;
         message.retained = false;
         message.dup = false;
@@ -379,11 +381,19 @@ void thread_th_angle()
 void thread_det_angle()
 {
     int16_t pDataXYZ[3] = {0};
+    int16_t pDataXYZ_r[3] = {0};
+    BSP_ACCELERO_AccGetXYZ(pDataXYZ_r);
+    theta_r = -180 / acos(-1) * asin(pDataXYZ_r[0] / sqrt(pDataXYZ_r[0] * pDataXYZ_r[0] + pDataXYZ_r[2] * pDataXYZ_r[2]));
+    printf("reference acceleration vector: %d, %d, %d\n", pDataXYZ_r[0], pDataXYZ_r[1], pDataXYZ_r[2]);
+    myled2 = 1;
+    myled = 1;
     while (flag < 5)
     {
         BSP_ACCELERO_AccGetXYZ(pDataXYZ);
-        theta = -180 / acos(-1) * asin(pDataXYZ[0] / sqrt(pDataXYZ[0] * pDataXYZ[0] + pDataXYZ[2] * pDataXYZ[2]));
-        printf("angle: %lf\n", theta);
+        theta = -180 / acos(-1) * asin(pDataXYZ[0] / sqrt(pDataXYZ[0] * pDataXYZ[0] + pDataXYZ[2] * pDataXYZ[2])) - theta_r;
+        uLCD.cls();
+        uLCD.printf("angle: %lf\n", theta);
         ThisThread::sleep_for(200ms);
     }
+    myled = 0;
 }
