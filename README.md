@@ -16,3 +16,4 @@ After you selected the disired angle, press the user button to jump out of this 
 Then Enter the following code on the screen:  
 
     /det_angle/run
+Now you can tilt the board. When the angle is higher than the threshold angle, it will send messange to the broker. After it sends five times, it will stop the detection. Note that when the reference angle is detected, LED2 will be on. Also, when the detection is still processing, LED1 is on. When the detection is done, LED1 is off.
