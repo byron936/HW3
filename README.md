@@ -1,5 +1,6 @@
 # HW3
 ## Run code
+First enter to the following folder: HW3/src/model_deploy  
 Use the following command to compile:  
 
     $ sudo mbed compile --source . --source ~/ee2405/mbed-os-build/ -m B_L4S5I_IOT01A -t GCC_ARM --profile tflite.json -f  
